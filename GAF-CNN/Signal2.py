@@ -27,8 +27,8 @@ class Signal(object):
             return -1
         
     def dataframe_roll_evening(self, df):       
-        def EveningStarSignal(window_series):            
-            window_df = df.loc[window_series.index]           
+        def EveningStarSignal(window_series):        
+            window_df = df.loc[window_series.index]
             trend = window_df['trend1'].iloc[-4]
             body1 = window_df['realbody'].iloc[-3]
             body2 = window_df['realbody'].iloc[-2]
@@ -37,20 +37,18 @@ class Signal(object):
             half2 = window_df['open'].iloc[-3] + (body1 * (4 / 5))
             close3 = window_df['close'].iloc[-1]
             open2 = window_df['open'].iloc[-2]                    
-            
+
             cond1 = (trend == 1) and (body1 > 0) and (body2 > 0) and (body3 < 0)
             cond2 = (open2 > half1)
             cond3 = (close3 < half2)
-            
-            if cond1 and cond2 and cond3:
-                return 1  
-            else:
-                return 0            
+
+            return 1 if cond1 and cond2 and cond3 else 0
+
         return EveningStarSignal
     
     def dataframe_roll_morning(self, df):    
-        def MorningStarSignal(window_series):           
-            window_df = df.loc[window_series.index]           
+        def MorningStarSignal(window_series):       
+            window_df = df.loc[window_series.index]
             trend = window_df['trend1'].iloc[-4]
             body1 = window_df['realbody'].iloc[-3]
             body2 = window_df['realbody'].iloc[-2]
@@ -60,21 +58,19 @@ class Signal(object):
             close3 = window_df['close'].iloc[-1]
             open2 = window_df['open'].iloc[-2]
             #percentile1 = stats.percentileofscore(abs(window_df['realbody']), abs(window_df['realbody'].iloc[-3]), kind='strict')
-            
+
             cond1 = (trend == -1) and (body1 < 0) and (body2 > 0) and (body3 > 0)
             cond2 = (close3 >= half1)
             cond3 = (open2 <= half2)
             #cond4 = (percentile1 > 60)
-                         
-            if cond1 and cond2 and cond3:
-                return 1 
-            else:
-                return 0          
+
+            return 1 if cond1 and cond2 and cond3 else 0
+
         return MorningStarSignal
     
     def dataframe_roll_bear(self, df):   
-        def BearishHaramiSignal(window_series):       
-            window_df = df.loc[window_series.index]       
+        def BearishHaramiSignal(window_series):   
+            window_df = df.loc[window_series.index]
             trend = window_df['trend2'].iloc[-3]
             body1 = window_df['realbody'].iloc[-2]
             body2 = window_df['realbody'].iloc[-1]
@@ -82,20 +78,18 @@ class Signal(object):
             open2 = window_df['open'].iloc[-1]
             close1 = window_df['close'].iloc[-2]
             close2 = window_df['close'].iloc[-1] 
-            
+
             cond1 = (trend == 1) and (body1 > 0) and (body2 < 0)
             cond2 = (open2 < close1)
             cond3 = (close2 > open1)
-            
-            if cond1 and cond2 and cond3:
-                return 1 
-            else:
-                return 0        
+
+            return 1 if cond1 and cond2 and cond3 else 0
+
         return BearishHaramiSignal
     
     def dataframe_roll_bull(self, df):   
-        def BullishHaramiSignal(window_series):       
-            window_df = df.loc[window_series.index]       
+        def BullishHaramiSignal(window_series):   
+            window_df = df.loc[window_series.index]
             trend = window_df['trend2'].iloc[-3]
             body1 = window_df['realbody'].iloc[-2]
             body2 = window_df['realbody'].iloc[-1]
@@ -103,51 +97,49 @@ class Signal(object):
             open2 = window_df['open'].iloc[-1]
             close1 = window_df['close'].iloc[-2]
             close2 = window_df['close'].iloc[-1] 
-            
+
             cond1 = (trend == -1) and (body1 < 0) and (body2 > 0)
             cond2 = (open2 > close1)
             cond3 = (close2 < open1)
-            
-            if cond1 and cond2 and cond3:
-                return 1 
-            else:
-                return 0        
+
+            return 1 if cond1 and cond2 and cond3 else 0
+
         return BullishHaramiSignal
         
     def pattern(self, df, rule, signal): 
-        if signal == 'BearishHarami' or signal == 'BullishHarami':
+        if signal in ['BearishHarami', 'BullishHarami']:
             last1, last2 = 8, 9
-        elif signal == 'MorningStar' or signal == 'EveningStar':
+        elif signal in ['MorningStar', 'EveningStar']:
             last1, last2 = 7, 8
-            
-        t_ls = df.loc[df[signal] == 1].index        
+
+        t_ls = df.loc[df[signal] == 1].index
+        fontsize=12
         for i, j in zip(t_ls, range(1, len(t_ls) + 1)):
-            target = df.loc[df.index <= i].iloc[-10:]              
-            fontsize=12
-            plt.rcParams['xtick.labelsize'] = fontsize  
-            plt.rcParams['ytick.labelsize'] = fontsize 
-            plt.rcParams['axes.titlesize'] = fontsize           
+            target = df.loc[df.index <= i].iloc[-10:]
+            plt.rcParams['xtick.labelsize'] = fontsize
+            plt.rcParams['ytick.labelsize'] = fontsize
+            plt.rcParams['axes.titlesize'] = fontsize
             fig = plt.figure(figsize=(24, 8))
-            ax = plt.subplot2grid((1, 1), (0, 0))           
+            ax = plt.subplot2grid((1, 1), (0, 0))
             ax.set_xticks(range(10))
-            ax.set_xticklabels(target.index)           
-            y = target['close'].iloc[0:last1].values.reshape(-1, 1)
+            ax.set_xticklabels(target.index)
+            y = target['close'].iloc[:last1].values.reshape(-1, 1)
             x = np.array(range(1, last2)).reshape(-1, 1)
             model = LinearRegression()
             model.fit(x, y)
-            y_pred = model.predict(x)           
-            ax.plot(y_pred, label='Trend')           
+            y_pred = model.predict(x)
+            ax.plot(y_pred, label='Trend')
             arr = np.c_[range(target.shape[0]), target[['open', 'high', 'low', 'close']].values]
-            mpf.candlestick_ohlc(ax, arr, width=0.4, alpha=1, colordown='#53c156', colorup='#ff1717')          
-            locs, labels = plt.xticks() 
+            mpf.candlestick_ohlc(ax, arr, width=0.4, alpha=1, colordown='#53c156', colorup='#ff1717')
+            locs, labels = plt.xticks()
             plt.setp(labels , rotation = 45)
             plt.grid()
             ax.legend(loc = 'best', prop = {'size': fontsize})
             title_name = signal + '_' + rule
             ax.set_title(title_name)
-            fig.subplots_adjust(bottom = 0.25)       
+            fig.subplots_adjust(bottom = 0.25)
             name = signal + '_' + rule + '_' + str(j)
-            plt.savefig(name)        
+            plt.savefig(name)
             plt.close()
         
     def process(self):
@@ -194,13 +186,13 @@ class Signal(object):
         
     def summary(self):
         period = self.data.index[[1, -1]]
-        print('Rule : %s' % (self.time_period))
-        print('Period : %s - %s' % (period[0], period[1]), '\n')
+        print(f'Rule : {self.time_period}')
+        print(f'Period : {period[0]} - {period[1]}', '\n')
         total = self.data.shape[0]
         num = None
         for i in self.detect_ls:
             num = np.sum(self.data[i])
-            print('Number of', i, ': %s // %s' % (num, total), '\n')
+            print('Number of', i, f': {num} // {total}', '\n')
         
         
 if __name__ == "__main__":

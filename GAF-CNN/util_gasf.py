@@ -51,10 +51,7 @@ def get_gasf(arr):
 
 
 def get_arr(data, signal, d=None):
-    if signal != 'n':
-        df_es = data.loc[data[signal]==1]
-    else:
-        df_es = d
+    df_es = data.loc[data[signal]==1] if signal != 'n' else d
     arr = np.zeros((df_es.shape[0], 10, 4))
     for index, N in zip(df_es.index, range(df_es.shape[0])):
         df = data.loc[data.index <= index][-10::]
@@ -74,8 +71,7 @@ def process(file):
 
 def detect(data, signal, d=None):
     arr = get_arr(data, signal, d)
-    gasf = get_gasf(arr)
-    return gasf
+    return get_gasf(arr)
 
 
 

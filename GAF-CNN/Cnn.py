@@ -33,14 +33,13 @@ class CNN(object):
     def plot_images_labels_prediction(self, images, labels, prediction, idx, num=10):
         fig = plt.gcf()
         fig.set_size_inches(12, 14)
-        if num > 25:
-            num = 25
+        num = min(num, 25)
         for i in range(0, num):
             ax = plt.subplot(5, 5, 1 + i)
             ax.imshow(images[idx], cmap='binary')
-            title = 'label = ' + str(labels[idx])
+            title = f'label = {str(labels[idx])}'
             if len(prediction) > 0:
-                title += ', predict = ' + str(prediction[idx])
+                title += f', predict = {str(prediction[idx])}'
             ax.set_title(title, fontsize=10)
             ax.set_xticks([])
             ax.set_yticks([])
@@ -95,7 +94,7 @@ class CNN(object):
         self.show_train_history(self.train_history, 'loss', 'val_loss')
         self.show_train_history(self.train_history, 'accuracy', 'val_accuracy')
         score = self.model.evaluate(self.X_test_image, self.y_testOneHot)
-        print('Score of the Testing Data: {}'.format(score))
+        print(f'Score of the Testing Data: {score}')
         prediction = self.model.predict_classes(self.X_test_image)
         #self.plot_images_labels_prediction(self.X_test_image, self.y_test_label, prediction, idx=0)
         #print(pd.crosstab(self.y_test_label, prediction, rownames=['label'], colnames=['predict']))

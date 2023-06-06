@@ -22,7 +22,9 @@ def main():
     AGENT_METHOD = _config[-2]
     CURRENCY_PAIR = _config[-1]
 
-    theMarket = Market(data_path="data/%s_Candlestick_4_Hour_BID_01.12.2018-31.12.2018.csv"%CURRENCY_PAIR)#, indicators={'ADX': 12})
+    theMarket = Market(
+        data_path=f"data/{CURRENCY_PAIR}_Candlestick_4_Hour_BID_01.12.2018-31.12.2018.csv"
+    )
     MyRecord = Record()
     MyOrderManager = OrderManager(market=theMarket, record=MyRecord)
     MyTrader = SureFireTrader(orderManager=MyOrderManager)
@@ -31,20 +33,18 @@ def main():
     start_order_type = ['BUY','SELL']
     max_level_limit = [2,3,4]
     window_size = 12
-    
+
     output_record = {'episode':[], 'total_trades': [], 'win_trades': [],
                     'lose_trades': [], 'profit_factor': [], 'net_profit': [],
                     'max_drawdown': [], 'trading_rounds': []}
-                    
-    if AGENT_METHOD != "constant":                
-        iter_range = range(0,100+1,100)
-    else:
-        iter_range = range(1)
-        
+
+    iter_range = range(0,100+1,100) if AGENT_METHOD != "constant" else range(1)
+    episode_end = False
+    max_idle_limit = 12 #future action
     for the_episode in iter_range:
         # Create a RL agent
         if AGENT_METHOD != "constant":
-            with open("config/%s.json"%AGENT_METHOD, 'r') as fp:
+            with open(f"config/{AGENT_METHOD}.json", 'r') as fp:
                 agent_config = json.load(fp=fp)
             with open("config/conv2d.json", 'r') as fp:
                 network_config = json.load(fp=fp)
@@ -76,17 +76,15 @@ def main():
         profit_history = []
         idle_count = 0
         round_count = 0
-        episode_end = False
-        max_idle_limit = 12 #future action
         MyRecord.reset()
         MyOrderManager.reset()
         theMarket.reset(start_index=window_size)
-        
+
         #pbar = tqdm()
         while(theMarket.next()): #main loop, essential
 
             #pbar.update(1) # simple-GUI
-            
+
             ################### ROUTINES ################### 
             MyOrderManager.orders_check() #routine, after market.next
             trade_status, other_detail = MyTrader.status_check() #routine, after orders_check
@@ -105,7 +103,7 @@ def main():
 
             ################## TAKE ACTION #################
             if trade_status == 'TRADE_OVER':
-                
+
                 ############ GET REWARD & TRAIN ################
 
                 action = agent.act(state) # Get prediction from agent, execute
@@ -120,7 +118,7 @@ def main():
                 round_count += 1
                 idle_count = 0
                 logging.info("NewTradeStarted: current net profit=%f (price@%f)"%(MyRecord.get_net_profit(), theMarket.get_market_price()))
-            
+
             elif trade_status == 'ADD_ORDER':
                 last_order = MyTrader.get_orders_detail()[-1]
                 if last_order['order_type'] == 'BUY':
@@ -129,41 +127,41 @@ def main():
                     price = last_order['price'] + theMarket.get_pip(TP_pip)
                 MyTrader.add_reverse_order(price=price, SL_pip=SL_pip, TP_pip=TP_pip)
                 idle_count = 0
-            
+
             elif trade_status == 'ERROR':
                 logging.warning("SureFireError: order issues...")
-            
+
             elif trade_status == 'NONE':
                 idle_count += 1
                 if idle_count >= max_idle_limit:
-                    
+
                     action = agent.act(state) # Get prediction from agent, execute
                     SL_pip = SLTP_pips[action['SLTP_pips']]*2
                     TP_pip = SLTP_pips[action['SLTP_pips']]
                     MyTrader.set_max_level(max_level_limit[action['max_level_limit']])
                     first_order_type = start_order_type[action['start_order_type']]
-                    
+
 
                     MyTrader.new_trade(SL_pip=SL_pip, TP_pip=TP_pip, start_order_type=first_order_type)
                     idle_count = 0
                     logging.info("NewTradeStarted: current net profit=%f (price@%f)"%(MyRecord.get_net_profit(), theMarket.get_market_price()))
             ################################################
 
-        
+
             profit_history.append(MyRecord.get_net_profit()) #for plotting
-        
+
         #pbar.close()
         my_details = MyRecord.show_details()
         print("Rounds of Tradings: %d\n"%round_count)
         print('---')
-        
+
         output_record['episode'].append(the_episode)
         output_record['trading_rounds'].append(round_count)
         for k in my_details:
             output_record[k].append(my_details[k])
-        
-        #plt.plot(range(len(profit_history)), profit_history)
-        #plt.show()
+            
+            #plt.plot(range(len(profit_history)), profit_history)
+            #plt.show()
     '''
     for k in output_record:
         plt.plot(output_record['episode'], output_record[k])

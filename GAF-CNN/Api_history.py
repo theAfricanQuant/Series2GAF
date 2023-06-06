@@ -62,10 +62,10 @@ class Api_history(object):
     
     
     def summary_history(self):
-        print('target: {}'.format(self.target))
-        print('rule: {}'.format(self.rule))
-        print('Period: {} - {}'.format(self.df_his.index[0], self.df_his.index[-1]))
-        print('shape: {}'.format(self.df_his.shape))
+        print(f'target: {self.target}')
+        print(f'rule: {self.rule}')
+        print(f'Period: {self.df_his.index[0]} - {self.df_his.index[-1]}')
+        print(f'shape: {self.df_his.shape}')
         
         
 if __name__ == "__main__":

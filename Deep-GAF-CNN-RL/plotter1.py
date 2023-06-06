@@ -10,10 +10,8 @@ def reset_dt(ts):
     y, d, m = ts_str.split('-')
     m, h = m.split(' ')
     if int(m) > 12:
-        t = d
-        d = m
-        m = t
-    return datetime.strptime('%s %s %s %s'%(y,m,d,h), '%Y %m %d %H:%M:%S')
+        d, m = m, d
+    return datetime.strptime(f'{y} {m} {d} {h}', '%Y %m %d %H:%M:%S')
 
 with open(sys.argv[1],'rb') as f:
     data = pickle.load(f)

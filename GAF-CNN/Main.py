@@ -27,7 +27,7 @@ class Main(object):
         self.gasf_arr = None
         self.load_data = None
         self.load_model = None
-        self.pattern_dict = dict()
+        self.pattern_dict = {}
         for i, j in zip(signal_ls, range(len(signal_ls))):
             self.pattern_dict[j] = i
         self.pattern_dict[len(signal_ls)] = 'No Pattern'
@@ -103,10 +103,10 @@ class Main(object):
             x_realtime_arr = gasf
             y_pred_realtime = model.model.predict_classes(x_realtime_arr)
             pattern = self.pattern_dict[y_pred_realtime[0]]
-            print('Target: {}'.format(self.target))
-            print('Time Rule: {}'.format(self.rule))
-            print('Time Period: {} - {}'.format(period[0], period[1]))
-            print('The Pattern of the Realtime Data: {}'.format(pattern))
+            print(f'Target: {self.target}')
+            print(f'Time Rule: {self.rule}')
+            print(f'Time Period: {period[0]} - {period[1]}')
+            print(f'The Pattern of the Realtime Data: {pattern}')
             util_pattern(df_real, self.rule, pattern)
             return (period, pattern)
         else:

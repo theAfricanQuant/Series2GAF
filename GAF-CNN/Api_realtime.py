@@ -36,10 +36,7 @@ class Api_realtime(object):
                 con1 = (4 <= int(dt_object2.astimezone(self.timezone).strftime('%m')) <= 10)
                 con2 = ((int(dt_object2.astimezone(self.timezone).strftime('%m')) == 3) and (int(dt_object.astimezone(self.timezone).strftime('%d')) >= 11))
                 con3 = ((int(dt_object2.astimezone(self.timezone).strftime('%m')) == 11) and (int(dt_object.astimezone(self.timezone).strftime('%d')) <= 2))
-                if con1 or con2 or con3:
-                    t =  dt_object - timedelta(0, 3600)
-                else:
-                    t = dt_object
+                t = dt_object - timedelta(0, 3600) if con1 or con2 or con3 else dt_object
                 df[j].iloc[-1] = t
             else:
                 df[j].iloc[-1] = packages_json_real[0][i]
@@ -61,7 +58,7 @@ class Api_realtime(object):
                         t = utc + timedelta(0, 28800)
                     df[k].iloc[i] = t
                 else:
-                    df[k].iloc[i] = packages_json_his['historical'][j][k]                  
+                    df[k].iloc[i] = packages_json_his['historical'][j][k]
         self.df_real = df   
     
     def kchart(self, df):
@@ -77,7 +74,7 @@ class Api_realtime(object):
         self.real()
         self.process(self.df_real)
         if (timedelta(0, 63000) <= (self.df_real.index[-1] - self.df_real.index[-2]) <= timedelta(0, 86399)):
-            self.df_real = self.df_real.iloc[0:10]
+            self.df_real = self.df_real.iloc[:10]
             self.kchart(self.df_real)
             period = [self.df_real.index[0], self.df_real.index[9]]
             return (self.df_real, period)
@@ -87,10 +84,10 @@ class Api_realtime(object):
             period = [self.df_real.index[1], self.df_real.index[10]]
             return (self.df_real, period)
         elif (self.df_real.index[-1] - self.df_real.index[-2]) == timedelta(0, 0):
-            self.df_real = self.df_real.iloc[0:10]
+            self.df_real = self.df_real.iloc[:10]
             self.kchart(self.df_real)
             period = [self.df_real.index[0], self.df_real.index[9]]
-            return (self.df_real, period)   
+            return (self.df_real, period)
         else:
             return False      
 
